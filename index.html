@@ -148,7 +148,7 @@
       color: #ffffff;
       font-size: 16px;
       font-weight: 600;
-      padding: 14px;
+      padding: 15px;
       border: none;
       border-radius: 12px;
       cursor: pointer;
@@ -173,55 +173,6 @@
       font-size: 14px;
       line-height: 1.6;
     }
-
-    .modal-overlay {
-      display: none;
-      position: fixed;
-      top: 0; left: 0; right: 0; bottom: 0;
-      background: rgba(0,0,0,0.45);
-      z-index: 999;
-      align-items: center;
-      justify-content: center;
-      padding: 16px;
-    }
-    .modal-box {
-      background: #ffffff;
-      border-radius: 18px;
-      max-width: 500px;
-      width: 100%;
-      padding: 28px;
-      box-shadow: 0 10px 40px rgba(0,0,0,0.2);
-      text-align: center;
-    }
-    .modal-box h3 {
-      font-size: 20px;
-      margin-bottom: 8px;
-    }
-    .modal-btn {
-      display: block;
-      width: 100%;
-      padding: 12px;
-      border-radius: 10px;
-      font-size: 14px;
-      font-weight: 600;
-      cursor: pointer;
-      margin-top: 10px;
-      text-decoration: none;
-      border: none;
-    }
-    .modal-btn-email {
-      background: var(--primary);
-      color: #fff;
-    }
-    .modal-btn-slack {
-      background: #4a154b;
-      color: #fff;
-    }
-    .modal-btn-close {
-      background: #e5e5ea;
-      color: #1d1d1f;
-      margin-top: 14px;
-    }
   </style>
 </head>
 <body>
@@ -244,15 +195,9 @@
     <form id="crosswordForm">
       <!-- Submitter Profile -->
       <div class="profile-card">
-        <div class="grid-2col">
-          <div class="form-group" style="margin-bottom: 0;">
-            <label for="submitterName">Your Full Name <span class="hint">(Required)</span></label>
-            <input type="text" id="submitterName" placeholder="e.g., Alex Rivers" required />
-          </div>
-          <div class="form-group" style="margin-bottom: 0;">
-            <label for="submitterEmail">Your Email / Slack Handle <span class="hint">(Required)</span></label>
-            <input type="text" id="submitterEmail" placeholder="e.g., @alexr or alex@apple.com" required />
-          </div>
+        <div class="form-group" style="margin-bottom: 0;">
+          <label for="submitterName">Your Full Name <span class="hint">(Required)</span></label>
+          <input type="text" id="submitterName" placeholder="e.g., Alex Rivers" required />
         </div>
       </div>
 
@@ -304,41 +249,25 @@
       </div>
 
       <button type="submit" class="submit-btn" id="submitBtn">
-        <span>🚀 Submit My Crossword Answers</span>
+        <span>✉️ Submit Answers via Email</span>
       </button>
 
       <div id="submitSuccess" class="success-alert">
-        🎉 <strong>Answers Captured!</strong> Your answers are compiled and ready to send.
+        🎉 <strong>Thank you for participating!</strong><br>
+        Your email draft has been created. Check Apple Mail to send your answers to <strong>tamiesha_taylor@apple.com</strong>.<br>
+        Your submission timestamp is recorded once the email is sent!
       </div>
     </form>
   </div>
 </div>
 
-<!-- Modal Dialog -->
-<div id="submissionModal" class="modal-overlay">
-  <div class="modal-box">
-    <span style="font-size: 36px;">📨</span>
-    <h3>Lock In Your Submission!</h3>
-    <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 20px;">
-      To record your exact timestamp for the <strong>Top 3 shoutout</strong>, choose how you want to send your completed sheet:
-    </p>
-
-    <a id="emailSendBtn" href="#" class="modal-btn modal-btn-email">✉️ Send via Apple Mail (1-Click)</a>
-    <button onclick="copyToSlack()" class="modal-btn modal-btn-slack">💬 Copy Formatted Answers for Slack</button>
-    <button onclick="closeModal()" class="modal-btn modal-btn-close">Close</button>
-  </div>
-</div>
-
 <script>
-  let compiledText = '';
-
   const form = document.getElementById('crosswordForm');
 
   form.addEventListener('submit', function(e) {
     e.preventDefault();
 
     const name = document.getElementById('submitterName').value.trim();
-    const handle = document.getElementById('submitterEmail').value.trim();
 
     const a2 = document.getElementById('across2').value.trim().toUpperCase();
     const a4 = document.getElementById('across4').value.trim().toUpperCase();
@@ -349,10 +278,11 @@
     const d5 = document.getElementById('down5').value.trim().toUpperCase();
 
     const timestamp = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    const date = new Date().toLocaleDateString();
 
-    compiledText = `Crossword Submission - Tim Cook Edition\n` +
-      `Submitted By: ${name} (${handle})\n` +
-      `Timestamp: ${timestamp}\n\n` +
+    const bodyText = `Crossword Submission - Tim Cook Edition\n` +
+      `Submitted By: ${name}\n` +
+      `Timestamp: ${date} at ${timestamp}\n\n` +
       `[ACROSS]\n` +
       `2 Across: ${a2}\n` +
       `4 Across: ${a4}\n` +
@@ -363,27 +293,16 @@
       `3 Down: ${d3}\n` +
       `5 Down: ${d5}`;
 
-    // Prepare mailto link
     const recipient = 'tamiesha_taylor@apple.com';
     const subject = encodeURIComponent(`Weekly Crossword Submission - ${name}`);
-    const body = encodeURIComponent(compiledText);
-    document.getElementById('emailSendBtn').href = `mailto:${recipient}?subject=${subject}&body=${body}`;
+    const body = encodeURIComponent(bodyText);
 
-    // Show modal
-    document.getElementById('submissionModal').style.display = 'flex';
+    // Show on-page confirmation
+    document.getElementById('submitSuccess').style.display = 'block';
+
+    // Trigger 1-click email client draft
+    window.location.href = `mailto:${recipient}?subject=${subject}&body=${body}`;
   });
-
-  function copyToSlack() {
-    navigator.clipboard.writeText(compiledText).then(() => {
-      alert("✅ Your answers have been copied to your clipboard!\n\nSimply paste (Cmd + V) into your Slack message to Tamiesha.");
-      closeModal();
-    });
-  }
-
-  function closeModal() {
-    document.getElementById('submissionModal').style.display = 'none';
-    form.reset();
-  }
 </script>
 
 </body>
